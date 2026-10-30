@@ -77,7 +77,7 @@ function mix(hex, amt) {
   return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 }
 
-export function garmentArt(art = {}, { bg = true } = {}) {
+export function garmentArt(art = {}, { bg = true, fit = 'slice' } = {}) {
   const style = art.style || 'gown';
   const color = /^#[0-9a-f]{6}$/i.test(art.color || '') ? art.color : '#D6336C';
   const id = `ga${++artSeq}`;
@@ -122,7 +122,7 @@ export function garmentArt(art = {}, { bg = true } = {}) {
         <path d="M122 162q28 9 56 0" stroke="${dark}" stroke-width="4" fill="none" opacity=".55"/>
         <path d="M150 168q-2 110-14 218M150 168q22 110 62 218M150 168q-26 110-66 218" stroke="${dark}" stroke-width="2" fill="none" opacity=".2"/>`;
   }
-  return `<svg class="garment" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${esc(style)} illustration">
+  return `<svg class="garment" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid ${fit === 'meet' ? 'meet' : 'slice'}" role="img" aria-label="${esc(style)} illustration">
     <defs>
       <linearGradient id="${id}f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${light}"/><stop offset=".55" stop-color="${color}"/><stop offset="1" stop-color="${dark}"/></linearGradient>
       <radialGradient id="${id}b" cx=".5" cy=".35" r=".8"><stop offset="0" stop-color="${back}"/><stop offset="1" stop-color="${back2}"/></radialGradient>
@@ -133,11 +133,13 @@ export function garmentArt(art = {}, { bg = true } = {}) {
   </svg>`;
 }
 
-export function itemMedia(item, index = 0) {
+// fit 'meet' shows the whole illustration (used in the big gallery) and fills the sides with a matching colour.
+export function itemMedia(item, index = 0, fit = 'slice') {
   const photo = item.photos?.[index];
-  return photo
-    ? `<img src="${esc(photo)}" alt="${esc(item.title)}" loading="lazy">`
-    : `<div class="art">${garmentArt(item.art)}</div>`;
+  if (photo) return `<img src="${esc(photo)}" alt="${esc(item.title)}" loading="lazy">`;
+  const c = /^#[0-9a-f]{6}$/i.test(item.art?.color || '') ? item.art.color : '#D6336C';
+  const style = fit === 'meet' ? ` style="background:${mix(c, 0.8)}"` : '';
+  return `<div class="art"${style}>${garmentArt(item.art, { fit })}</div>`;
 }
 
 // ---------- Small components ----------

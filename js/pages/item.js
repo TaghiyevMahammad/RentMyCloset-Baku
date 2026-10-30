@@ -34,7 +34,7 @@ export async function renderItem(main, { params }) {
   <div class="container item-layout">
     <section class="item-gallery" aria-label="Photos">
       <div class="gallery-main">
-        <div data-main>${itemMedia(item, 0)}</div>
+        <div data-main>${itemMedia(item, 0, 'meet')}</div>
         <button class="fav-btn lg ${fav ? 'on' : ''}" data-fav="${esc(item.id)}" aria-label="Save" aria-pressed="${fav}">${icon('heart', 20)}</button>
         ${photos.length > 1 ? `<button class="gal-nav prev" data-step="-1" aria-label="Previous photo">${icon('chevL')}</button><button class="gal-nav next" data-step="1" aria-label="Next photo">${icon('chevR')}</button>` : ''}
       </div>
@@ -117,7 +117,7 @@ export async function renderItem(main, { params }) {
   let current = 0;
   const show = (i) => {
     current = (i + photos.length) % photos.length;
-    main.querySelector('[data-main]').innerHTML = itemMedia(item, current);
+    main.querySelector('[data-main]').innerHTML = itemMedia(item, current, 'meet');
     main.querySelectorAll('[data-photo]').forEach((t) => t.classList.toggle('active', Number(t.dataset.photo) === current));
   };
   main.querySelectorAll('[data-photo]').forEach((t) => t.addEventListener('click', () => show(Number(t.dataset.photo))));

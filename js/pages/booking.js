@@ -148,7 +148,7 @@ function nextStep(b, role) {
     declined: '',
     cancelled: '',
   };
-  return t[b.status] ? `<p>${icon('info', 16)} ${t[b.status]}</p>` : '';
+  return t[b.status] ? `<p>${icon('info', 16)}<span>${t[b.status]}</span></p>` : '';
 }
 
 function actions(b, role) {
