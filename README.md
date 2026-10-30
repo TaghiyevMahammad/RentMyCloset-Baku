@@ -14,12 +14,14 @@ npm install      # first time only: downloads Vite into node_modules/
 npm run dev      # starts the site at http://localhost:5173 and opens your browser
 ```
 
-The page reloads by itself when you save a file. Press `Ctrl + C` in the terminal to stop.
+The page reloads by itself when you save a file. Press `Ctrl + C` in the terminal to stop (answer `Y` if asked).
 
 | Command | What it does |
 |---|---|
 | `npm install` | Installs the tools (run once, and again after pulling changes to `package.json`) |
 | `npm run dev` | Development server with auto-reload: **use this while working** |
+| `npm run dev:phone` | Same, but also reachable from your phone on the same Wi-Fi (open the "Network" address it prints) |
+| `npm run stop` | Force-stops a leftover server if you see "Port 5173 is already in use" |
 | `npm run build` | Makes an optimised version of the site in `dist/` for hosting (Netlify, GitHub Pages...) |
 | `npm run preview` | Opens the `dist/` build at http://localhost:4173 to check it before publishing |
 | `npm start` | Backup server with no install needed (no auto-reload) |

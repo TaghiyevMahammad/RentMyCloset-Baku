@@ -5,7 +5,9 @@
   "type": "module",
   "description": "RentMyCloset Baku MVP - a local marketplace for renting occasion outfits. Wear it once. Share it forever.",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --strictPort",
+    "dev:phone": "vite --host --strictPort",
+    "stop": "node scripts/stop.js",
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server.js"
