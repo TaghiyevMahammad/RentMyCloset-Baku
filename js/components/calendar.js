@@ -10,6 +10,8 @@ export function createCalendar(el, { blocked = [], start = null, end = null, max
   let s = start;
   let e = end;
   const view = parseISO(start || min);
+  // Near the end of a month, open on the next month so there are dates to pick.
+  if (!start && new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate() - view.getDate() < 5) view.setMonth(view.getMonth() + 1, 1);
   view.setDate(1);
 
   const rangeOk = (a, b) => {
