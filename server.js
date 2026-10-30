@@ -1,10 +1,12 @@
-// Tiny local web server (no dependencies). Run: npm start  ->  http://localhost:5173
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+// Tiny local web server with no dependencies (backup to `npm run dev`).
+// Run: npm start  ->  http://localhost:5173
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const PORT = Number(process.env.PORT) || 5173;
-const ROOT = __dirname;
+const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',

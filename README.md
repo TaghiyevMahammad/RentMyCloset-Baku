@@ -7,15 +7,24 @@ This is the MVP website for our Introduction to Entrepreneurship group project.
 
 ## Run it on your computer
 
-You need [Node.js](https://nodejs.org) 18 or newer. Nothing else needs to be installed.
+You need [Node.js](https://nodejs.org) 18 or newer.
 
 ```bash
-npm start
+npm install      # first time only: downloads Vite into node_modules/
+npm run dev      # starts the site at http://localhost:5173 and opens your browser
 ```
 
-Then open **http://localhost:5173** in your browser. Press `Ctrl + C` in the terminal to stop.
+The page reloads by itself when you save a file. Press `Ctrl + C` in the terminal to stop.
 
-> Opening `index.html` by double-clicking will not work, because browsers block JavaScript modules on `file://`. Use `npm start`, or the VS Code "Live Server" extension.
+| Command | What it does |
+|---|---|
+| `npm install` | Installs the tools (run once, and again after pulling changes to `package.json`) |
+| `npm run dev` | Development server with auto-reload: **use this while working** |
+| `npm run build` | Makes an optimised version of the site in `dist/` for hosting (Netlify, GitHub Pages...) |
+| `npm run preview` | Opens the `dist/` build at http://localhost:4173 to check it before publishing |
+| `npm start` | Backup server with no install needed (no auto-reload) |
+
+> Opening `index.html` by double-clicking will not work, because browsers block JavaScript modules on `file://`. Always use one of the commands above.
 
 ## Demo accounts
 
