@@ -1,5 +1,5 @@
 // Shared UI building blocks: icons, logo, illustrations, cards, toasts, modals.
-import { esc, money, eventLabel, STATUS } from './utils.js';
+import { esc, money, eventLabel, cityLabel, STATUS } from './utils.js';
 
 // ---------- Icons (24x24, stroke-based) ----------
 const ICONS = {
@@ -179,7 +179,7 @@ export function itemCard(item, favIds = []) {
     <button class="fav-btn ${fav ? 'on' : ''}" data-fav="${esc(item.id)}" aria-label="${fav ? 'Remove from saved' : 'Save'}" aria-pressed="${fav}">${icon('heart', 18)}</button>
     <div class="ic-body">
       <div class="ic-top">
-        <span class="ic-meta">Size ${esc(item.size)} · ${esc(eventLabel(item.events?.[0]))}</span>
+        <span class="ic-meta">Size ${esc(item.size)} · ${esc(cityLabel(item.city) || eventLabel(item.events?.[0]))}</span>
         ${r?.count ? `<span class="ic-rating">${icon('star', 13)} ${r.avg.toFixed(1)}</span>` : `<span class="ic-new">New</span>`}
       </div>
       <h3 class="ic-title"><a href="#/item/${esc(item.id)}">${esc(item.title)}</a></h3>

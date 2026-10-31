@@ -1,6 +1,6 @@
 import { store } from '../store.js';
 import { navigate } from '../router.js';
-import { esc, money, CATEGORIES, EVENTS, SIZES, GENDERS, AREAS, CONDITIONS, COLORS, ART_STYLES, colorHex } from '../utils.js';
+import { esc, money, CATEGORIES, EVENTS, SIZES, GENDERS, CITIES, areasFor, CONDITIONS, COLORS, ART_STYLES, colorHex } from '../utils.js';
 import { icon, itemCard, emptyState, toast, setLoading } from '../ui.js';
 import { createPhotoPicker } from '../components/photoPicker.js';
 
@@ -19,8 +19,8 @@ export async function renderListItem(main, { params }) {
     }
   }
   const editing = !!item;
-  document.title = `${editing ? 'Edit listing' : 'Lend your outfit'} · RentMyCloset Baku`;
-  const v = item || { category: 'dress', gender: 'women', events: [], size: '', color: 'emerald', condition: 'Worn once', area: AREAS[0], photos: [], art: { style: 'gown', color: colorHex('emerald') } };
+  document.title = `${editing ? 'Edit listing' : 'Lend your outfit'} · RentMyCloset`;
+  const v = item || { category: 'dress', gender: 'women', events: [], size: '', color: 'emerald', condition: 'Worn once', city: store.getCity() || 'baku', area: areasFor(store.getCity() || 'baku')[0], photos: [], art: { style: 'gown', color: colorHex('emerald') } };
   let photos = [...(v.photos || [])];
 
   const opt = (list, cur) => list.map((x) => (typeof x === 'string' ? `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>` : `<option value="${x.id}" ${x.id === cur ? 'selected' : ''}>${esc(x.label)}</option>`)).join('');
@@ -77,7 +77,10 @@ export async function renderListItem(main, { params }) {
 
       <fieldset class="card form-card">
         <legend><span class="num">5</span> Pickup</legend>
-        <label class="field"><span>Pickup area</span><select name="area">${opt(AREAS, v.area)}</select><em class="err" data-err="area"></em></label>
+        <div class="field-row">
+          <label class="field"><span>City</span><select name="city">${opt(CITIES, v.city)}</select><em class="err" data-err="city"></em></label>
+          <label class="field"><span>Pickup area</span><select name="area">${opt(areasFor(v.city), v.area)}</select><em class="err" data-err="area"></em></label>
+        </div>
         <p class="muted small">${icon('pin', 14)} Only the area is public. You agree on the exact meeting point after you approve a request.</p>
       </fieldset>
 
@@ -124,6 +127,7 @@ export async function renderListItem(main, { params }) {
       retailPrice: Number(f.get('retailPrice')) || 0,
       pricePerDay: Number(f.get('pricePerDay')) || 0,
       deposit: f.get('deposit') === '' ? '' : Number(f.get('deposit')),
+      city: f.get('city'),
       area: f.get('area'),
       photos,
       art: { style: f.get('artStyle') || defaultStyle(category), color: colorHex(color) },
@@ -150,6 +154,7 @@ export async function renderListItem(main, { params }) {
       : `<small>Your earnings</small><strong>—</strong><span class="muted small">Set a price per day to see what you'll earn.</span>`;
   }
 
+  form.elements.city.addEventListener('change', () => (form.elements.area.innerHTML = opt(areasFor(form.elements.city.value), '')));
   form.addEventListener('input', refresh);
   form.addEventListener('change', refresh);
   main.querySelector('[data-suggest]').addEventListener('click', (e) => {

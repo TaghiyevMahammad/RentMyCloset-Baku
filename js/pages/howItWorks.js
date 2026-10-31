@@ -1,5 +1,5 @@
 import { store } from '../store.js';
-import { esc, money } from '../utils.js';
+import { esc, money, CITIES } from '../utils.js';
 import { icon } from '../ui.js';
 
 const FAQ = [
@@ -14,7 +14,7 @@ const FAQ = [
 ];
 
 export async function renderHowItWorks(main) {
-  document.title = 'How it works · RentMyCloset Baku';
+  document.title = 'How it works · RentMyCloset';
   const s = store.getSettings();
   const pct = Math.round(s.commissionRate * 100);
   const ex = { price: 80, days: 2 };
@@ -25,7 +25,8 @@ export async function renderHowItWorks(main) {
     <div class="container narrow-c">
       <span class="kicker">How it works</span>
       <h1>Renting an outfit should be as easy as borrowing from a friend</h1>
-      <p class="lead">Built for Baku: same-city pickup, clear rules and people you can trust.</p>
+      <p class="lead">Built for local communities: same-city pickup, clear rules and people you can trust.</p>
+      <p class="muted small mt">${icon('pin', 14)} Now in ${CITIES.map((c) => esc(c.label)).join(', ')}.</p>
     </div>
   </section>
 

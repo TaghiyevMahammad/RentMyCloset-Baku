@@ -57,7 +57,20 @@ export const GENDERS = [
   { id: 'men', label: 'Men' },
   { id: 'unisex', label: 'Unisex' },
 ];
-export const AREAS = ['Nizami (city centre)', '28 May', 'Ganjlik', 'Narimanov', 'Yasamal', 'Sahil', 'White City', 'Khatai'];
+// Cities and their pickup areas. To launch in a new city, add it here.
+export const CITIES = [
+  { id: 'baku', label: 'Baku', areas: ['Nizami (city centre)', '28 May', 'Ganjlik', 'Narimanov', 'Yasamal', 'Sahil', 'White City', 'Khatai'] },
+  { id: 'sumgait', label: 'Sumgait', areas: ['City centre', 'Seaside boulevard', 'Near the bus station'] },
+  { id: 'ganja', label: 'Ganja', areas: ['City centre', 'Kapaz district', 'Nizami district'] },
+  { id: 'mingachevir', label: 'Mingachevir', areas: ['City centre', 'Kura riverside'] },
+  { id: 'shaki', label: 'Shaki', areas: ['City centre', 'Old town'] },
+  { id: 'gabala', label: 'Gabala', areas: ['City centre', 'Tufandag area'] },
+  { id: 'lankaran', label: 'Lankaran', areas: ['City centre', 'Seaside'] },
+  { id: 'nakhchivan', label: 'Nakhchivan', areas: ['City centre'] },
+];
+export const cityLabel = (id) => CITIES.find((c) => c.id === id)?.label || '';
+export const areasFor = (id) => CITIES.find((c) => c.id === id)?.areas || [];
+export const placeLabel = (item) => [item?.area, cityLabel(item?.city)].filter(Boolean).join(', ');
 export const CONDITIONS = ['New with tags', 'Worn once', 'Like new', 'Gently used'];
 
 export const COLORS = [

@@ -1,17 +1,17 @@
 import { store } from '../store.js';
 import { navigate } from '../router.js';
-import { esc, money, fmtRange, fmtMonthYear, eventLabel, categoryLabel, colorLabel, GENDERS } from '../utils.js';
+import { esc, money, fmtRange, fmtMonthYear, eventLabel, categoryLabel, colorLabel, placeLabel, GENDERS } from '../utils.js';
 import { icon, itemMedia, itemCard, avatar, stars, ratingInline, roleBadge, verifiedBadge, emptyState, toast, setLoading, confirmDialog } from '../ui.js';
 import { createCalendar } from '../components/calendar.js';
 
 export async function renderItem(main, { params }) {
   const item = await store.getItem(params.id);
   if (!item) {
-    document.title = 'Item not found · RentMyCloset Baku';
+    document.title = 'Item not found · RentMyCloset';
     main.innerHTML = `<div class="container section">${emptyState('This outfit is no longer available', 'It may have been rented out or removed by the owner.', '<a class="btn btn-primary" href="#/browse">Browse other outfits</a>')}</div>`;
     return;
   }
-  document.title = `${item.title} · RentMyCloset Baku`;
+  document.title = `${item.title} · RentMyCloset`;
   const user = store.currentUser();
   const isOwner = user?.id === item.ownerId;
   const settings = store.getSettings();
@@ -53,7 +53,7 @@ export async function renderItem(main, { params }) {
         <div class="facts">
           <div><small>Size</small><b>${esc(item.size)}</b></div>
           <div><small>Condition</small><b>${esc(item.condition)}</b></div>
-          <div><small>Pickup</small><b>${esc(item.area)}</b></div>
+          <div><small>Pickup</small><b>${esc(placeLabel(item))}</b></div>
         </div>
 
         ${isOwner ? ownerPanel(item) : `

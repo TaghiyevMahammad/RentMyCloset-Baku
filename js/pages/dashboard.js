@@ -1,6 +1,6 @@
 import { store } from '../store.js';
 import { navigate } from '../router.js';
-import { esc, money, fmtRange } from '../utils.js';
+import { esc, money, fmtRange, cityLabel } from '../utils.js';
 import { icon, itemMedia, itemCard, avatar, statusBadge, emptyState, toast, confirmDialog, openModal, roleBadge, verifiedBadge } from '../ui.js';
 
 const TABS = [
@@ -15,7 +15,7 @@ const TABS = [
 export async function renderDashboard(main, { params }) {
   const tab = TABS.some((t) => t.id === params.tab) ? params.tab : 'overview';
   const user = store.currentUser();
-  document.title = `${TABS.find((t) => t.id === tab).label} · Dashboard · RentMyCloset Baku`;
+  document.title = `${TABS.find((t) => t.id === tab).label} · Dashboard · RentMyCloset`;
   const pending = await store.pendingRequestsCount();
 
   main.innerHTML = `
@@ -158,7 +158,7 @@ async function listings(body, user) {
            (i) => `<div class="listing-row ${i.status !== 'active' ? 'paused' : ''}">
           <a class="lr-media" href="#/item/${esc(i.id)}">${itemMedia(i)}</a>
           <div class="lr-main"><a href="#/item/${esc(i.id)}"><strong>${esc(i.title)}</strong></a>
-            <span class="muted small">Size ${esc(i.size)} · ${money(i.pricePerDay)}/day · ${i.rentals} ${i.rentals === 1 ? 'rental' : 'rentals'}</span>
+            <span class="muted small">Size ${esc(i.size)} · ${esc(cityLabel(i.city))} · ${money(i.pricePerDay)}/day · ${i.rentals} ${i.rentals === 1 ? 'rental' : 'rentals'}</span>
             ${i.status === 'active' ? '<span class="badge tone-green">Live</span>' : '<span class="badge tone-gray">Paused</span>'}</div>
           <div class="lr-actions">
             <a class="btn btn-sm btn-ghost" href="#/list/${esc(i.id)}" title="Edit">${icon('edit', 16)}<span class="hide-sm">Edit</span></a>

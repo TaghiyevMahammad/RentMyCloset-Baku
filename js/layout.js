@@ -1,9 +1,9 @@
 // Site header (desktop + mobile drawer) and footer.
 import { store } from './store.js';
 import { icon, logo, avatar, toast, confirmDialog, openModal } from './ui.js';
-import { esc } from './utils.js';
+import { esc, CITIES, cityLabel } from './utils.js';
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from './seed.js';
-import { navigate, parseHash } from './router.js';
+import { navigate, parseHash, buildHash, resolve } from './router.js';
 
 export async function renderHeader() {
   const el = document.getElementById('site-header');
@@ -14,13 +14,14 @@ export async function renderHeader() {
 
   el.innerHTML = `
   <div class="container header-inner">
-    <a href="#/" class="brand" aria-label="RentMyCloset Baku home">${logo()}<span class="brand-text">RentMyCloset<b>Baku</b></span></a>
+    <a href="#/" class="brand" aria-label="RentMyCloset home">${logo()}<span class="brand-text">RentMy<b>Closet</b></span></a>
     <nav class="main-nav" aria-label="Main">
       <a href="#/browse" class="${active('/browse')}">Browse</a>
       <a href="#/how-it-works" class="${active('/how-it-works')}">How it works</a>
       <a href="#/list" class="${active('/list')}">Lend your outfit</a>
     </nav>
     <div class="header-actions">
+      <button type="button" class="loc-btn" data-action="city" aria-label="Choose your city, currently ${esc(cityLabel(store.getCity()) || 'all cities')}">${icon('pin', 16)}<span class="loc-label">${esc(cityLabel(store.getCity()) || 'All cities')}</span>${icon('chevD', 14, 'loc-chev')}</button>
       ${user
         ? `<a href="#/dashboard/favorites" class="icon-btn hide-sm" aria-label="Saved items" title="Saved">${icon('heart')}</a>
            <a href="#/dashboard/requests" class="icon-btn has-badge" aria-label="Requests on your items" title="Requests on your items">${icon('bag')}${pending ? `<span class="dot-badge">${pending}</span>` : ''}</a>
@@ -44,6 +45,7 @@ export async function renderHeader() {
   </div>
   <div class="mobile-drawer" hidden>
     <nav aria-label="Mobile">
+      <button type="button" data-action="city">${icon('pin', 18)} City: <b>${esc(cityLabel(store.getCity()) || 'All cities')}</b></button>
       <a href="#/browse">${icon('search', 18)} Browse outfits</a>
       <a href="#/list">${icon('plus', 18)} Lend your outfit</a>
       <a href="#/how-it-works">${icon('info', 18)} How it works</a>
@@ -71,7 +73,33 @@ export async function renderHeader() {
       navigate('/');
     }
     if (a.dataset.action === 'switch') switchAccountDialog();
+    if (a.dataset.action === 'city') cityDialog();
   };
+}
+
+export function cityDialog() {
+  const counts = store.cityCounts();
+  const current = store.getCity();
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  const { modal, close } = openModal({
+    title: 'Choose your city',
+    body: `<p class="muted">We show outfits you can pick up in your city. You can change this any time.</p>
+      <div class="city-list">${[{ id: '', label: 'All cities' }, ...CITIES]
+        .map((c) => `<button type="button" class="city-opt ${c.id === current ? 'active' : ''}" data-city="${c.id}">${icon('pin', 16)}<span>${esc(c.label)}</span><small>${(c.id ? counts[c.id] : total) || 0} outfits</small></button>`)
+        .join('')}</div>
+      <p class="muted small mt">Your city is not here yet? <a href="mailto:hello@rentmycloset.az">Tell us</a> and we will bring RentMyCloset to you.</p>`,
+  });
+  modal.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-city]');
+    if (!b) return;
+    const id = b.dataset.city;
+    store.setCity(id);
+    close();
+    toast(id ? `Showing outfits in ${cityLabel(id)}.` : 'Showing outfits in all cities.', 'success');
+    const { path, query } = parseHash();
+    if (path === '/browse') navigate(buildHash('/browse', { ...query, city: id, area: '' }), { replace: true });
+    else if (path === '/') resolve();
+  });
 }
 
 export async function switchAccountDialog() {
@@ -99,8 +127,8 @@ export function renderFooter() {
   el.innerHTML = `
   <div class="container footer-grid">
     <div class="footer-brand">
-      <a href="#/" class="brand">${logo()}<span class="brand-text">RentMyCloset<b>Baku</b></span></a>
-      <p>Wear it once. Share it forever. A local marketplace for occasion outfits in Baku.</p>
+      <a href="#/" class="brand">${logo()}<span class="brand-text">RentMy<b>Closet</b></span></a>
+      <p>Wear it once. Share it forever. A local marketplace for occasion outfits, now in ${CITIES.length} cities across Azerbaijan.</p>
       <div class="socials">
         <a href="https://instagram.com/" target="_blank" rel="noopener" class="icon-btn" aria-label="Instagram">${icon('instagram')}</a>
         <a href="mailto:hello@rentmycloset.az" class="icon-btn" aria-label="Email">${icon('mail')}</a>
@@ -111,7 +139,7 @@ export function renderFooter() {
     <div><h4>Help</h4><a href="#/how-it-works#trust">Trust & safety</a><a href="#/how-it-works#rules">Rental rules</a><a href="#/how-it-works#faq">FAQ</a><a href="mailto:hello@rentmycloset.az">hello@rentmycloset.az</a></div>
   </div>
   <div class="container footer-bottom">
-    <span>© ${new Date().getFullYear()} RentMyCloset Baku · MVP demo. Data is saved in this browser only.</span>
+    <span>© ${new Date().getFullYear()} RentMyCloset · MVP demo. Data is saved in this browser only.</span>
     <button class="link-btn" data-reset>${icon('refresh', 14)} Reset demo data</button>
   </div>`;
   el.querySelector('[data-reset]').addEventListener('click', async () => {

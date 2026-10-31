@@ -1,7 +1,7 @@
-# RentMyCloset Baku
+# RentMyCloset
 
 **Wear it once. Share it forever.**
-A local marketplace that connects people in Baku who own occasion outfits with people who need one for a single event.
+A local marketplace that connects people who own occasion outfits with people in the same city who need one for a single event. It starts in 8 cities across Azerbaijan (Baku, Sumgait, Ganja, Mingachevir, Shaki, Gabala, Lankaran, Nakhchivan), and adding a city is one line in `js/utils.js`.
 
 This is the MVP website for our Introduction to Entrepreneurship group project.
 

@@ -23,12 +23,15 @@ export function seedData() {
     { id: 'u_salon', name: 'Elegance Dress Hire', email: 'salon@demo.az', phone: '+994 12 444 55 66', role: 'salon', bio: 'Dress-hire salon near Fountain Square. Evening gowns, suits and national costumes, professionally cleaned.', avatarColor: '#1F2440', verified: true, joined: ts(-300) },
     { id: 'u_rashad', name: 'Rashad Karimov', email: 'rashad@demo.az', phone: '+994 51 555 66 77', role: 'user', bio: 'Suits for every occasion. Each one worn once or twice.', avatarColor: '#45474f', verified: true, joined: ts(-90) },
     { id: 'u_murad', name: 'Murad Hasanov', email: 'murad@demo.az', phone: '+994 77 666 77 88', role: 'user', bio: '', avatarColor: '#c9a13b', verified: false, joined: ts(-40) },
-    { id: 'u_admin', name: 'RentMyCloset Team', email: 'team@rentmycloset.az', phone: '+994 50 000 00 00', role: 'admin', bio: 'The team behind RentMyCloset Baku.', avatarColor: '#D6336C', verified: true, joined: ts(-365) },
+    { id: 'u_gunel', name: 'Gunel Ismayilova', email: 'gunel@demo.az', phone: '+994 55 777 88 99', role: 'user', bio: 'Living in Ganja. Weddings every weekend in summer, so my wardrobe is full!', avatarColor: '#3b7bbf', verified: true, joined: ts(-70) },
+    { id: 'u_sabina', name: 'Sabina Rzayeva', email: 'sabina@demo.az', phone: '+994 50 888 99 00', role: 'user', bio: 'Sumgait. Teacher and part-time event host.', avatarColor: '#c2477a', verified: true, joined: ts(-60) },
+    { id: 'u_aytan', name: 'Aytan Hajiyeva', email: 'aytan@demo.az', phone: '+994 70 999 00 11', role: 'user', bio: 'From Shaki. I collect traditional costumes and silk kelaghayi.', avatarColor: '#8a5a2b', verified: true, joined: ts(-50) },
+    { id: 'u_admin', name: 'RentMyCloset Team', email: 'team@rentmycloset.az', phone: '+994 50 000 00 00', role: 'admin', bio: 'The team behind RentMyCloset.', avatarColor: '#D6336C', verified: true, joined: ts(-365) },
   ];
 
   const item = (id, ownerId, o) => ({
     id, ownerId, status: 'active', photos: [], minDays: 1,
-    gender: 'women', brand: '', condition: 'Worn once', area: 'Nizami (city centre)',
+    gender: 'women', brand: '', condition: 'Worn once', city: 'baku', area: 'Nizami (city centre)',
     createdAt: ts(-(Math.abs(id.charCodeAt(id.length - 1)) % 60) - 1), ...o,
   });
 
@@ -49,6 +52,11 @@ export function seedData() {
     item('i_black', 'u_leyla', { title: 'Little black dress', category: 'dress', events: ['party', 'corporate'], size: 'S', color: 'black', brand: 'COS', pricePerDay: 35, deposit: 30, retailPrice: 240, condition: 'Like new', area: 'Nizami (city centre)', art: { style: 'cocktail', color: '#1b1b20' }, description: 'Timeless and simple. Dress it up with our gold clutch.' }),
     item('i_silverclutch', 'u_nigar', { title: 'Silver crystal clutch', category: 'accessory', events: ['wedding', 'engagement'], size: 'One size', color: 'silver', brand: '', pricePerDay: 12, deposit: 25, retailPrice: 140, condition: 'New with tags', area: 'Ganjlik', art: { style: 'clutch', color: '#b7bcc6' }, description: 'Never used. Crystal-covered hard case clutch.' }),
     item('i_rednational', 'u_salon', { title: 'Red national dress for khina', category: 'national', events: ['wedding', 'photoshoot'], size: 'L', color: 'ruby', brand: 'Handmade', pricePerDay: 60, deposit: 80, retailPrice: 650, condition: 'Gently used', area: 'Nizami (city centre)', art: { style: 'national', color: '#b3123d' }, description: 'Traditional red dress with gold trim, a classic choice for the khina (henna) night.' }),
+    item('i_ganja_gown', 'u_gunel', { title: 'Navy sequin evening gown', category: 'dress', events: ['wedding', 'party'], size: 'M', color: 'navy', brand: 'Tarik Ediz', pricePerDay: 70, deposit: 60, retailPrice: 600, condition: 'Worn once', city: 'ganja', area: 'Kapaz district', art: { style: 'gown', color: '#1f2a5a' }, description: 'Deep navy gown covered in fine sequins. Worn once to a wedding in Ganja. Fits M, works with heels up to 10 cm.' }),
+    item('i_ganja_suit', 'u_gunel', { title: 'Light grey wedding suit', category: 'suit', gender: 'men', events: ['wedding', 'graduation'], size: 'L', color: 'silver', brand: 'Network', pricePerDay: 50, deposit: 60, retailPrice: 480, condition: 'Like new', city: 'ganja', area: 'City centre', art: { style: 'suit', color: '#9aa1ad' }, description: 'My husband’s suit, size 50 (L). Jacket and trousers, perfect for summer weddings.' }),
+    item('i_sumgait_dress', 'u_sabina', { title: 'Emerald satin midi dress', category: 'dress', events: ['party', 'corporate'], size: 'S', color: 'emerald', brand: 'Mango', pricePerDay: 35, deposit: 30, retailPrice: 250, condition: 'Like new', city: 'sumgait', area: 'Seaside boulevard', art: { style: 'cocktail', color: '#1f7a5a' }, description: 'Elegant satin midi with a wrap front. Great for birthdays and work events.' }),
+    item('i_sumgait_grad', 'u_sabina', { title: 'Champagne graduation dress', category: 'dress', events: ['graduation', 'photoshoot'], size: 'M', color: 'champagne', brand: 'LC Waikiki', pricePerDay: 30, deposit: 25, retailPrice: 200, condition: 'Worn once', city: 'sumgait', area: 'City centre', art: { style: 'cocktail', color: '#dcc196' }, description: 'Soft champagne colour that looks lovely in graduation photos.' }),
+    item('i_shaki_silk', 'u_aytan', { title: 'Shaki silk national dress', category: 'national', events: ['photoshoot', 'engagement', 'wedding'], size: 'M', color: 'emerald', brand: 'Handmade in Shaki', pricePerDay: 50, deposit: 70, retailPrice: 550, condition: 'Like new', city: 'shaki', area: 'Old town', art: { style: 'national', color: '#1f6b52' }, description: 'Traditional dress with a real Shaki silk kelaghayi included. Popular for photoshoots at the Khan’s Palace.' }),
   ];
 
   const s = { commissionRate: 0.1, cleaningFee: 10, bufferDays: 1, maxDays: 7 };
@@ -101,7 +109,7 @@ export function seedData() {
   ];
 
   return {
-    version: 1,
+    version: 2,
     users,
     items,
     bookings,

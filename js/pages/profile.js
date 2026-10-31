@@ -9,7 +9,7 @@ export async function renderProfile(main, { params }) {
     main.innerHTML = `<div class="container section">${emptyState('Profile not found', '', '<a class="btn btn-primary" href="#/browse">Browse outfits</a>')}</div>`;
     return;
   }
-  document.title = `${u.name} · RentMyCloset Baku`;
+  document.title = `${u.name} · RentMyCloset`;
   const me = store.currentUser();
   const [items, reviews, favs] = await Promise.all([store.listItems({ ownerId: u.id, sort: 'newest' }), store.listReviews({ targetId: u.id }), store.getFavorites()]);
 

@@ -1,9 +1,9 @@
 {
-  "name": "rentmycloset-baku",
+  "name": "rentmycloset",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "RentMyCloset Baku MVP - a local marketplace for renting occasion outfits. Wear it once. Share it forever.",
+  "description": "RentMyCloset MVP - a local marketplace for renting occasion outfits. Wear it once. Share it forever.",
   "scripts": {
     "dev": "vite --strictPort",
     "dev:phone": "vite --host --strictPort",

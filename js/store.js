@@ -6,10 +6,12 @@
 // All functions are async on purpose so that swap needs no page changes.
 // ============================================================================
 import { seedData, DEMO_PASSWORD } from './seed.js';
-import { today, addDays, rentalDays } from './utils.js';
+import { today, addDays, rentalDays, CITIES, areasFor } from './utils.js';
 
 const DB_KEY = 'rmc_db_v1';
 const SESSION_KEY = 'rmc_session_v1';
+const CITY_KEY = 'rmc_city';
+const DB_VERSION = 2;
 const BLOCKING = ['requested', 'approved', 'picked_up'];
 const CONTACT_VISIBLE = ['approved', 'picked_up', 'completed'];
 
@@ -106,7 +108,7 @@ function enrichBooking(b, viewer) {
   const showContact = CONTACT_VISIBLE.includes(b.status) || viewer?.role === 'admin';
   return {
     ...clone(b),
-    item: it ? { id: it.id, title: it.title, photos: it.photos.slice(0, 1), art: it.art, size: it.size, area: it.area } : { id: b.itemId, title: 'Deleted item', photos: [], art: { style: 'gown', color: '#ccc' } },
+    item: it ? { id: it.id, title: it.title, photos: it.photos.slice(0, 1), art: it.art, size: it.size, city: it.city, area: it.area } : { id: b.itemId, title: 'Deleted item', photos: [], art: { style: 'gown', color: '#ccc' } },
     renter: publicUser(findUser(b.renterId), showContact),
     owner: publicUser(findUser(b.ownerId), showContact),
   };
@@ -120,7 +122,8 @@ function validateItem(data) {
   if (!data.events?.length) errors.events = 'Pick at least one event type.';
   if (!(Number(data.pricePerDay) > 0)) errors.pricePerDay = 'Enter a price per day.';
   if (!(Number(data.deposit) >= 0)) errors.deposit = 'Enter a deposit (0 or more).';
-  if (!data.area) errors.area = 'Choose a pickup area.';
+  if (!CITIES.some((c) => c.id === data.city)) errors.city = 'Choose a city.';
+  if (!data.area || (data.city && !areasFor(data.city).includes(data.area))) errors.area = 'Choose a pickup area in this city.';
   if (Object.keys(errors).length) {
     const e = new Error('Please fix the highlighted fields.');
     e.fields = errors;
@@ -128,7 +131,7 @@ function validateItem(data) {
   }
 }
 
-const ITEM_FIELDS = ['title', 'category', 'gender', 'events', 'size', 'color', 'brand', 'condition', 'retailPrice', 'pricePerDay', 'deposit', 'area', 'description', 'photos', 'art'];
+const ITEM_FIELDS = ['title', 'category', 'gender', 'events', 'size', 'color', 'brand', 'condition', 'retailPrice', 'pricePerDay', 'deposit', 'city', 'area', 'description', 'photos', 'art'];
 function pickItemFields(data) {
   const out = {};
   ITEM_FIELDS.forEach((k) => data[k] !== undefined && (out[k] = data[k]));
@@ -136,6 +139,20 @@ function pickItemFields(data) {
   if (typeof out.title === 'string') out.title = out.title.trim().slice(0, 80);
   if (typeof out.description === 'string') out.description = out.description.trim().slice(0, 1500);
   return out;
+}
+
+// Upgrade data saved by an older version of the app, keeping everything users created.
+async function migrate() {
+  if (db.version === 1) {
+    // v2: items have a city. Old data was Baku-only. Also add the new demo cities.
+    db.items.forEach((i) => (i.city ||= 'baku'));
+    const fresh = seedData();
+    const h = await hash(DEMO_PASSWORD);
+    fresh.users.filter((u) => !findUser(u.id)).forEach((u) => db.users.push({ ...u, passHash: h }));
+    fresh.items.filter((i) => !findItem(i.id)).forEach((i) => db.items.push(i));
+    db.version = 2;
+  }
+  persist();
 }
 
 // ============================================================================
@@ -148,11 +165,13 @@ export const store = {
     } catch {
       db = null;
     }
-    if (!db || db.version !== 1) {
+    if (!db || !db.version || db.version > DB_VERSION) {
       db = seedData();
       const h = await hash(DEMO_PASSWORD);
       db.users.forEach((u) => (u.passHash = h));
       persist();
+    } else if (db.version < DB_VERSION) {
+      await migrate();
     }
     // Keep several open tabs in sync.
     if (listening) return;
@@ -233,6 +252,7 @@ export const store = {
     if (f.events?.length) list = list.filter((i) => f.events.some((e) => i.events.includes(e)));
     if (f.sizes?.length) list = list.filter((i) => f.sizes.includes(i.size));
     if (f.maxPrice) list = list.filter((i) => i.pricePerDay <= Number(f.maxPrice));
+    if (f.city) list = list.filter((i) => i.city === f.city);
     if (f.area) list = list.filter((i) => i.area === f.area);
     if (f.start) list = list.filter((i) => isFree(i.id, f.start, f.end && f.end >= f.start ? f.end : f.start));
     if (f.excludeId) list = list.filter((i) => i.id !== f.excludeId);
@@ -436,6 +456,22 @@ export const store = {
     return k < 0;
   },
 
+  // ---------- Location preference (saved in this browser) ----------
+  getCity() {
+    const c = localStorage.getItem(CITY_KEY) || '';
+    return CITIES.some((x) => x.id === c) ? c : '';
+  },
+  setCity(id) {
+    if (id && CITIES.some((x) => x.id === id)) localStorage.setItem(CITY_KEY, id);
+    else localStorage.removeItem(CITY_KEY);
+    emit({ city: true });
+  },
+  cityCounts() {
+    const counts = {};
+    db.items.filter((i) => i.status === 'active').forEach((i) => (counts[i.city] = (counts[i.city] || 0) + 1));
+    return counts;
+  },
+
   // ---------- Settings & admin ----------
   getSettings() {
     return clone(db.settings);
@@ -460,6 +496,8 @@ export const store = {
     db.bookings.forEach((b) => (byStatus[b.status] = (byStatus[b.status] || 0) + 1));
     const byCategory = {};
     db.items.forEach((i) => (byCategory[i.category] = (byCategory[i.category] || 0) + 1));
+    const byCity = {};
+    db.items.filter((i) => i.status === 'active').forEach((i) => (byCity[i.city] = (byCity[i.city] || 0) + 1));
     return {
       stats: {
         users: db.users.length,
@@ -472,6 +510,7 @@ export const store = {
         avgRental: done.length ? done.reduce((a, b) => a + b.rental, 0) / done.length : 0,
         byStatus,
         byCategory,
+        byCity,
       },
       bookings,
       users: db.users.map((x) => ({ ...publicUser(x, true), bookings: db.bookings.filter((b) => b.renterId === x.id).length })),

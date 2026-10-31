@@ -38,4 +38,4 @@ http
       });
     });
   })
-  .listen(PORT, () => console.log(`\n  RentMyCloset Baku is running:  http://localhost:${PORT}\n  Press Ctrl+C to stop.\n`));
+  .listen(PORT, () => console.log(`\n  RentMyCloset is running:  http://localhost:${PORT}\n  Press Ctrl+C to stop.\n`));

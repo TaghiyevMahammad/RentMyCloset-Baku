@@ -1,12 +1,16 @@
 import { store } from '../store.js';
 import { setQuery } from '../router.js';
-import { esc, debounce, today, fmtRange, CATEGORIES, EVENTS, SIZES, GENDERS, AREAS, eventLabel, categoryLabel } from '../utils.js';
+import { esc, debounce, today, fmtRange, CATEGORIES, EVENTS, SIZES, GENDERS, CITIES, areasFor, cityLabel, eventLabel, categoryLabel } from '../utils.js';
 import { icon, itemCard, emptyState } from '../ui.js';
 
 const PRICE_MAX = 200;
+const areaOptions = (city, cur) =>
+  `<option value="">${city ? `Anywhere in ${esc(cityLabel(city))}` : 'Choose a city first'}</option>` +
+  areasFor(city).map((a) => `<option ${a === cur ? 'selected' : ''}>${esc(a)}</option>`).join('');
+const subtitle = (city) => `Occasion wear from people and salons ${city ? `in ${esc(cityLabel(city))}` : `in ${CITIES.length} cities`}. Pick your dates to see only what's free.`;
 
 export async function renderBrowse(main, { query }) {
-  document.title = 'Browse outfits · RentMyCloset Baku';
+  document.title = 'Browse outfits · RentMyCloset';
   const state = {
     q: query.q || '',
     category: query.category || '',
@@ -14,6 +18,7 @@ export async function renderBrowse(main, { query }) {
     events: query.event ? query.event.split(',') : [],
     sizes: query.size ? query.size.split(',') : [],
     max: Number(query.max) || PRICE_MAX,
+    city: 'city' in query ? query.city : store.getCity(),
     area: query.area || '',
     start: query.start || '',
     end: query.end || '',
@@ -29,7 +34,7 @@ export async function renderBrowse(main, { query }) {
   <section class="page-head">
     <div class="container">
       <h1>Browse outfits</h1>
-      <p class="muted">Occasion wear from people and salons across Baku. Pick your dates to see only what's free.</p>
+      <p class="muted" data-sub>${subtitle(state.city)}</p>
     </div>
   </section>
   <div class="container browse">
@@ -37,6 +42,12 @@ export async function renderBrowse(main, { query }) {
       <div class="filters-head"><h3>${icon('filter', 18)} Filters</h3>
         <button type="button" class="link-btn" data-clear>Clear all</button>
         <button type="button" class="icon-btn filters-close" aria-label="Close filters">${icon('x')}</button>
+      </div>
+      <div class="filter-group"><h4>Location</h4>
+        <div class="loc-pair">
+          <select name="city" aria-label="City"><option value="">All cities</option>${CITIES.map((c) => `<option value="${c.id}" ${state.city === c.id ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}</select>
+          <select name="area" aria-label="Pickup area" ${state.city ? '' : 'disabled'}>${areaOptions(state.city, state.area)}</select>
+        </div>
       </div>
       <div class="filter-group"><h4>Your dates</h4>
         <div class="date-pair">
@@ -50,9 +61,6 @@ export async function renderBrowse(main, { query }) {
       <div class="filter-group"><h4>Size</h4><div class="chip-wrap">${SIZES.map((s) => check('size', s, s, state.sizes)).join('')}</div></div>
       <div class="filter-group"><h4>Max price per day <b data-maxout>${state.max >= PRICE_MAX ? 'Any' : state.max + ' AZN'}</b></h4>
         <input type="range" name="max" min="10" max="${PRICE_MAX}" step="5" value="${state.max}" aria-label="Maximum price per day">
-      </div>
-      <div class="filter-group"><h4>Pickup area</h4>
-        <select name="area"><option value="">Anywhere in Baku</option>${AREAS.map((a) => `<option ${state.area === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select>
       </div>
       <button type="button" class="btn btn-primary btn-block filters-apply">Show results</button>
     </form>
@@ -87,7 +95,14 @@ export async function renderBrowse(main, { query }) {
     state.events = f.getAll('event');
     state.sizes = f.getAll('size');
     state.max = Number(f.get('max'));
-    state.area = f.get('area') || '';
+    const city = f.get('city') || '';
+    if (city !== state.city) {
+      state.city = city;
+      form.elements.area.innerHTML = areaOptions(city, '');
+      form.elements.area.disabled = !city;
+      store.setCity(city);
+    }
+    state.area = form.elements.area.disabled ? '' : form.elements.area.value;
     state.start = f.get('start') || '';
     state.end = f.get('end') || '';
     if (state.start && state.end && state.end < state.start) {
@@ -104,16 +119,17 @@ export async function renderBrowse(main, { query }) {
     readForm();
     setQuery('/browse', {
       q: state.q, category: state.category, gender: state.gender, event: state.events.join(','), size: state.sizes.join(','),
-      max: state.max < PRICE_MAX ? state.max : '', area: state.area, start: state.start, end: state.end, sort: state.sort !== 'popular' ? state.sort : '',
+      max: state.max < PRICE_MAX ? state.max : '', city: state.city, area: state.area, start: state.start, end: state.end, sort: state.sort !== 'popular' ? state.sort : '',
     });
     const [items, favs] = await Promise.all([
       store.listItems({
         q: state.q, category: state.category, gender: state.gender, events: state.events, sizes: state.sizes,
-        maxPrice: state.max < PRICE_MAX ? state.max : 0, area: state.area, start: state.start, end: state.end || state.start, sort: state.sort,
+        maxPrice: state.max < PRICE_MAX ? state.max : 0, city: state.city, area: state.area, start: state.start, end: state.end || state.start, sort: state.sort,
       }),
       store.getFavorites(),
     ]);
     renderChips();
+    main.querySelector('[data-sub]').innerHTML = subtitle(state.city);
     main.querySelector('[data-count]').innerHTML = `<b>${items.length}</b> ${items.length === 1 ? 'outfit' : 'outfits'}${state.start ? ` available ${esc(fmtRange(state.start, state.end || state.start))}` : ''}`;
     main.querySelector('.filters-apply').textContent = `Show ${items.length} results`;
     grid.innerHTML = items.length
@@ -130,6 +146,7 @@ export async function renderBrowse(main, { query }) {
     state.events.forEach((e) => chips.push(['event', e, eventLabel(e)]));
     state.sizes.forEach((s) => chips.push(['size', s, 'Size ' + s]));
     if (state.max < PRICE_MAX) chips.push(['max', '', `Up to ${state.max} AZN`]);
+    if (state.city) chips.push(['city', '', cityLabel(state.city)]);
     if (state.area) chips.push(['area', '', state.area]);
     main.querySelector('[data-chips]').innerHTML = chips
       .map(([k, v, label]) => `<button type="button" class="chip removable" data-rm="${k}" data-v="${esc(v)}">${esc(label)} ${icon('x', 14)}</button>`)
@@ -144,7 +161,7 @@ export async function renderBrowse(main, { query }) {
     form.querySelectorAll('input[type=checkbox]').forEach((c) => (c.checked = false));
     form.elements.max.value = PRICE_MAX;
     form.elements.start.value = form.elements.end.value = '';
-    form.elements.area.value = '';
+    form.elements.city.value = '';
     qInput.value = '';
     update();
   }
@@ -174,6 +191,7 @@ export async function renderBrowse(main, { query }) {
     else if (k === 'category' || k === 'gender') form.querySelector(`input[name=${k}][value=""]`).checked = true;
     else if (k === 'event' || k === 'size') form.querySelector(`input[name=${k}][value="${CSS.escape(v)}"]`).checked = false;
     else if (k === 'max') form.elements.max.value = PRICE_MAX;
+    else if (k === 'city') form.elements.city.value = '';
     else if (k === 'area') form.elements.area.value = '';
     update();
   });

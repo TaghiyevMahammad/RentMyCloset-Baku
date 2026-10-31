@@ -1,10 +1,10 @@
 import { store } from '../store.js';
 import { navigate } from '../router.js';
-import { esc, money, fmtRange, fmtDate, STATUS, categoryLabel } from '../utils.js';
+import { esc, money, fmtRange, fmtDate, STATUS, categoryLabel, cityLabel } from '../utils.js';
 import { icon, itemMedia, statusBadge, toast } from '../ui.js';
 
 export async function renderAdmin(main, { query }) {
-  document.title = 'Admin · RentMyCloset Baku';
+  document.title = 'Admin · RentMyCloset';
   const tab = ['bookings', 'listings', 'users'].includes(query.tab) ? query.tab : 'bookings';
   const filter = query.status || '';
   const { stats, bookings, users, items } = await store.adminOverview();
@@ -41,7 +41,7 @@ export async function renderAdmin(main, { query }) {
         ${goal('Rentals in the last 30 days', rentals30, 20)}
         ${goal('Completed rentals (first 10)', stats.completed, 10)}
         <div class="status-counts">${Object.keys(STATUS).map((k) => `<a href="#/admin?status=${k}" class="sc">${statusBadge(k)}<b>${stats.byStatus[k] || 0}</b></a>`).join('')}</div>
-        <p class="muted small">Average rental value: <b>${money(stats.avgRental)}</b> · Listings by category: ${Object.entries(stats.byCategory).map(([k, v]) => `${esc(categoryLabel(k))} ${v}`).join(', ')}</p>
+        <p class="muted small">Average rental value: <b>${money(stats.avgRental)}</b> · Listings by category: ${Object.entries(stats.byCategory).map(([k, v]) => `${esc(categoryLabel(k))} ${v}`).join(', ')}<br>Live listings by city: ${Object.entries(stats.byCity).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${esc(cityLabel(k) || k)} ${v}`).join(', ')}</p>
       </div>
       <form class="card" data-settings>
         <h3>${icon('sliders', 18)} Marketplace settings</h3>
@@ -118,10 +118,10 @@ function bookingsTable(bookings, filter) {
 function listingsTable(items) {
   return `<div class="table-toolbar"><h3>Listings <span class="muted">(${items.length})</span></h3></div>
     <div class="table-wrap"><table class="table">
-    <thead><tr><th>Item</th><th>Owner</th><th>Size</th><th class="num">Price/day</th><th class="num">Rentals</th><th>Status</th><th></th></tr></thead>
+    <thead><tr><th>Item</th><th>Owner</th><th>City</th><th>Size</th><th class="num">Price/day</th><th class="num">Rentals</th><th>Status</th><th></th></tr></thead>
     <tbody>${items.map((i) => `<tr>
       <td><a class="t-item" href="#/item/${esc(i.id)}"><span class="t-thumb">${itemMedia(i)}</span>${esc(i.title)}</a></td>
-      <td>${esc(i.owner.name)}</td><td>${esc(i.size)}</td><td class="num">${money(i.pricePerDay)}</td><td class="num">${i.rentals}</td>
+      <td>${esc(i.owner.name)}</td><td>${esc(cityLabel(i.city))}</td><td>${esc(i.size)}</td><td class="num">${money(i.pricePerDay)}</td><td class="num">${i.rentals}</td>
       <td>${i.status === 'active' ? '<span class="badge tone-green">Live</span>' : `<span class="badge tone-gray">${esc(i.status)}</span>`}</td>
       <td><button class="btn btn-sm btn-ghost" data-item-status="${esc(i.id)}" data-to="${i.status === 'active' ? 'hidden' : 'active'}">${i.status === 'active' ? 'Hide' : 'Make live'}</button></td></tr>`).join('')}</tbody></table></div>`;
 }

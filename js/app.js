@@ -110,7 +110,7 @@ window.addEventListener('rmc:change', (e) => {
       else window.scrollTo(0, 0);
     },
     notFound: ({ path }) => {
-      document.title = 'Page not found · RentMyCloset Baku';
+      document.title = 'Page not found · RentMyCloset';
       renderHeader();
       freshMain().innerHTML = `<div class="container section">${emptyState('Page not found', `We couldn't find "${path}".`, `<a class="btn btn-primary" href="#/browse">${icon('search', 18)} Browse outfits</a>`)}</div>`;
     },

@@ -1,11 +1,16 @@
 import { store } from '../store.js';
 import { navigate, buildHash } from '../router.js';
-import { esc, money, today, EVENTS, SIZES } from '../utils.js';
+import { esc, money, today, EVENTS, SIZES, CITIES, cityLabel } from '../utils.js';
 import { icon, itemCard, garmentArt } from '../ui.js';
 
 export async function renderHome(main) {
-  document.title = 'RentMyCloset Baku · Wear it once. Share it forever.';
-  const [items, favs] = await Promise.all([store.listItems({ sort: 'popular', limit: 8 }), store.getFavorites()]);
+  document.title = 'RentMyCloset · Wear it once. Share it forever.';
+  const city = store.getCity();
+  const counts = store.cityCounts();
+  const favs = await store.getFavorites();
+  let items = await store.listItems({ sort: 'popular', city, limit: 8 });
+  const fallback = city && items.length < 4;
+  if (fallback) items = await store.listItems({ sort: 'popular', limit: 8 });
   const settings = store.getSettings();
   const pct = Math.round(settings.commissionRate * 100);
 
@@ -13,10 +18,12 @@ export async function renderHome(main) {
   <section class="hero">
     <div class="container hero-grid">
       <div class="hero-copy">
-        <span class="eyebrow">${icon('pin', 15)} Made for Baku</span>
+        <span class="eyebrow">${icon('pin', 15)} Now in ${CITIES.length} cities</span>
         <h1>Wear it once.<br><em>Share it forever.</em></h1>
         <p class="lead">Rent a stunning outfit for your next wedding, engagement or graduation for a fraction of the price, or earn money from the outfits already in your wardrobe.</p>
         <form class="hero-search" id="heroSearch" role="search">
+          <label class="hs-field"><span>City</span>
+            <select name="city"><option value="">All cities</option>${CITIES.map((c) => `<option value="${c.id}" ${c.id === city ? 'selected' : ''}>${c.label}</option>`).join('')}</select></label>
           <label class="hs-field"><span>Event</span>
             <select name="event"><option value="">Any event</option>${EVENTS.map((e) => `<option value="${e.id}">${e.label}</option>`).join('')}</select></label>
           <label class="hs-field"><span>Size</span>
@@ -50,7 +57,17 @@ export async function renderHome(main) {
     </div>
   </section>
 
-  <section class="section section-tint" id="how">
+  <section class="section section-tint">
+    <div class="container">
+      <div class="section-head"><div><span class="kicker">Locations</span><h2>Outfits near you</h2></div></div>
+      <div class="city-strip">
+        ${CITIES.map((c) => `<a class="city-chip ${c.id === city ? 'active' : ''}" href="#/browse?city=${c.id}" data-setcity="${c.id}">${icon('pin', 18)}<span><b>${esc(c.label)}</b><small>${counts[c.id] || 0} outfits</small></span></a>`).join('')}
+      </div>
+      <p class="muted small mt">Your city is not on the list yet? <a href="mailto:hello@rentmycloset.az">Tell us</a>, or <a href="#/list">list the first outfit there</a>.</p>
+    </div>
+  </section>
+
+  <section class="section" id="how">
     <div class="container">
       <div class="section-head center"><div><span class="kicker">How it works</span><h2>Three simple steps</h2></div></div>
       <div class="seg" role="tablist">
@@ -60,7 +77,7 @@ export async function renderHome(main) {
       <div class="steps" data-panel="rent">
         ${step(1, 'search', 'Find', 'Search by event, size, price and date. Every listing shows real photos, condition and an availability calendar.')}
         ${step(2, 'calendar', 'Request dates', 'Pick your dates and send a request. The owner confirms, usually within a few hours.')}
-        ${step(3, 'bag', 'Pick up & shine', 'Meet in central Baku, check the outfit together, wear it, return it. Your deposit comes back.')}
+        ${step(3, 'bag', 'Pick up & shine', 'Meet in your city, check the outfit together, wear it, return it. Your deposit comes back.')}
       </div>
       <div class="steps" data-panel="lend" hidden>
         ${step(1, 'camera', 'List your outfit', 'Add photos, size and a price per day. It takes about three minutes and listing is free.')}
@@ -72,7 +89,8 @@ export async function renderHome(main) {
 
   <section class="section">
     <div class="container">
-      <div class="section-head"><div><span class="kicker">Popular right now</span><h2>Loved in Baku</h2></div><a href="#/browse" class="link-arrow">View all ${icon('arrowR', 16)}</a></div>
+      <div class="section-head"><div><span class="kicker">Popular right now</span><h2>${city && !fallback ? `Loved in ${esc(cityLabel(city))}` : 'Loved by our community'}</h2></div><a href="#/browse" class="link-arrow">View all ${icon('arrowR', 16)}</a></div>
+      ${fallback ? `<p class="muted">Only a few outfits in ${esc(cityLabel(city))} so far, so here are favourites from all cities. <a href="#/list">Be one of the first lenders in ${esc(cityLabel(city))}</a>.</p>` : ''}
       <div class="item-grid">${items.map((i) => itemCard(i, favs)).join('')}</div>
     </div>
   </section>
@@ -140,8 +158,10 @@ export async function renderHome(main) {
     e.preventDefault();
     const f = new FormData(e.target);
     const date = f.get('date');
-    navigate(buildHash('/browse', { event: f.get('event'), size: f.get('size'), start: date, end: date }));
+    store.setCity(f.get('city'));
+    navigate(buildHash('/browse', { city: f.get('city'), event: f.get('event'), size: f.get('size'), start: date, end: date }));
   });
+  main.querySelectorAll('[data-setcity]').forEach((a) => a.addEventListener('click', () => store.setCity(a.dataset.setcity)));
 
   // Rent / lend toggle.
   main.querySelectorAll('[data-how]').forEach((btn) =>

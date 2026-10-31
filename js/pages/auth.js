@@ -10,7 +10,7 @@ function shell(main, inner, side) {
   main.innerHTML = `
   <div class="auth">
     <div class="auth-card">
-      <a href="#/" class="brand">${logo()}<span class="brand-text">RentMyCloset<b>Baku</b></span></a>
+      <a href="#/" class="brand">${logo()}<span class="brand-text">RentMy<b>Closet</b></span></a>
       ${inner}
     </div>
     <div class="auth-side" aria-hidden="true">${side}</div>
@@ -18,7 +18,7 @@ function shell(main, inner, side) {
 }
 
 export async function renderLogin(main, { query }) {
-  document.title = 'Log in · RentMyCloset Baku';
+  document.title = 'Log in · RentMyCloset';
   const next = safeNext(query.next);
   if (store.currentUser()) return navigate(next || '/dashboard', { replace: true });
   shell(
@@ -69,7 +69,7 @@ export async function renderLogin(main, { query }) {
 }
 
 export async function renderSignup(main, { query }) {
-  document.title = 'Sign up · RentMyCloset Baku';
+  document.title = 'Sign up · RentMyCloset';
   const next = safeNext(query.next);
   if (store.currentUser()) return navigate(next || '/dashboard', { replace: true });
   const salon = query.role === 'salon';

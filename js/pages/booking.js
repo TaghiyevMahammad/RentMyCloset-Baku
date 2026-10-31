@@ -1,6 +1,6 @@
 import { store } from '../store.js';
 import { navigate } from '../router.js';
-import { esc, money, fmtRange, fmtDateTime, fmtDate, STATUS } from '../utils.js';
+import { esc, money, fmtRange, fmtDateTime, fmtDate, placeLabel, STATUS } from '../utils.js';
 import { icon, itemMedia, avatar, statusBadge, emptyState, toast, confirmDialog, openModal, setLoading, stars, verifiedBadge, roleBadge } from '../ui.js';
 import { createPhotoPicker } from '../components/photoPicker.js';
 import { askReason } from './dashboard.js';
@@ -24,7 +24,7 @@ export async function renderBooking(main, { params }) {
     main.innerHTML = `<div class="container section">${emptyState('Booking not found', '', '<a class="btn btn-primary" href="#/dashboard">Go to dashboard</a>')}</div>`;
     return;
   }
-  document.title = `Booking · ${b.item.title} · RentMyCloset Baku`;
+  document.title = `Booking · ${b.item.title} · RentMyCloset`;
   const role = b.viewerRole; // renter | owner | admin
   const isOwnerSide = role === 'owner' || role === 'admin';
   const other = role === 'renter' ? b.owner : b.renter;
@@ -66,7 +66,7 @@ export async function renderBooking(main, { params }) {
     </div>
 
     <aside class="booking-aside">
-      <a class="card summary-item" href="#/item/${esc(b.item.id)}"><div class="si-media">${itemMedia(b.item)}</div><div><strong>${esc(b.item.title)}</strong><small class="muted">Size ${esc(b.item.size || '')} · ${icon('pin', 12)} ${esc(b.item.area || '')}</small></div></a>
+      <a class="card summary-item" href="#/item/${esc(b.item.id)}"><div class="si-media">${itemMedia(b.item)}</div><div><strong>${esc(b.item.title)}</strong><small class="muted">Size ${esc(b.item.size || '')} · ${icon('pin', 12)} ${esc(placeLabel(b.item))}</small></div></a>
       <div class="card">
         <h3>Payment summary</h3>
         <div class="quote flat">
@@ -89,7 +89,7 @@ export async function renderBooking(main, { params }) {
       </div>
       <div class="card">
         <h3>${icon('pin', 18)} Pickup</h3>
-        <p class="small">Area: <b>${esc(b.item.area || 'Central Baku')}</b><br>Pickup on <b>${esc(fmtDate(b.start, { weekday: 'long', day: 'numeric', month: 'long' }))}</b><br>Return by <b>${esc(fmtDate(b.end, { weekday: 'long', day: 'numeric', month: 'long' }))}</b></p>
+        <p class="small">Area: <b>${esc(placeLabel(b.item) || 'Agreed after approval')}</b><br>Pickup on <b>${esc(fmtDate(b.start, { weekday: 'long', day: 'numeric', month: 'long' }))}</b><br>Return by <b>${esc(fmtDate(b.end, { weekday: 'long', day: 'numeric', month: 'long' }))}</b></p>
         <p class="muted small">Agree on the exact place and time by phone. Check the outfit together and take condition photos.</p>
       </div>
     </aside>
